@@ -1,0 +1,18 @@
+<span class="helpheader">   
+  <i class="fa fa-question-sign" id="helphomeid" data-toggle="popover" data-placement='left' aria-hidden="true" data-original-title="help" href='#' value="" ></i>
+  <div id="contenthomeid" style="display: none">
+    <div class="popover-body">
+      <p> <%= t('document.help.home1_html', :profile=> url_for(current_subject))%> </p>
+    </div>
+    <div class="popover-footer popoverfix"><%= t('document.help.overview_html')%></div>
+  </div>
+</span>
+<%content_for :javascript do%>
+  $('#helphomeid').popover({ 
+    html : true,
+    content: function() {
+      return $('#contenthomeid').html();
+    }
+  });
+<%end%>
+

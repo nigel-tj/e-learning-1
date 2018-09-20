@@ -1,0 +1,28 @@
+# See http://www.robotstxt.org/wc/norobots.html for documentation on how to use the robots.txt file
+#
+
+Sitemap: http://vishub.org/sitemap/sitemap.xml.gz
+
+User-agent: *
+Crawl-Delay: 50
+Disallow: /excursions/new
+Disallow: /*/*/profile
+Disallow: /users/*/followings
+Disallow: /users/*/followers
+Disallow: /users/*/excursions*
+Disallow: /users/*/categories
+Disallow: /spam_reports
+
+user-agent: AhrefsBot
+Crawl-Delay: 50
+Disallow: /search
+Disallow: /excursions/new
+Disallow: /*/*/profile
+Disallow: /users/*/followings
+Disallow: /users/*/followers
+Disallow: /users/*/excursions*
+Disallow: /users/*/categories
+Disallow: /spam_reports
+
+User-agent: Ezooms
+Disallow: /

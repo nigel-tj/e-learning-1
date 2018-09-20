@@ -1,0 +1,28 @@
+<header class="admin_header">
+	<h4><i class="fa fa-wrench"></i> <%=t('admin.title')%> </h4>
+	<hr>
+</header>
+<nav>
+	<ul class="nav nav-pills">
+		<li <%=!@reports.nil? ? "class=active" : ""%>>
+			<a href="<%=admin_open_reports_path%>"><i class="fa fa-flag"></i> <%=t('admin.reports')%></a>
+		</li>
+		<li <%=!@users.nil? ? "class=active" : ""%>>
+			<a href="<%=admin_users_path%>"><i class="fa fa-users"></i> <%=t('admin.users')%></a>
+		</li>
+		<li <%=!@requests.nil? ? "class=active" : ""%>>
+			<a href="<%=admin_requests_path%>"><i class="fa fa-key"></i> <%=t('admin.requests')%></a>
+		</li>
+		<li <%=!@contests.nil? ? "class=active" : ""%>>
+			<a href="<%=admin_contests_path%>"><i class="fa fa-trophy"></i> <%=t('admin.contests')%></a>
+		</li>
+		<li>
+			<a href="/resque" target="_blank"><i class="fa fa-cloud-upload"></i> <%=t('admin.resque')%></a>
+		</li>
+		<% if Vish::Application.config.courses_enabled %>
+			<li>
+				<a href="/courses" target="_blank"><i class="fa fa-graduation-cap"></i> <%=t('admin.courses')%></a>
+			</li>
+		<% end %>
+	</ul>
+</nav>

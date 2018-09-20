@@ -1,0 +1,23 @@
+<%content_for :title do%>
+  <%= t("site.current.msg")%>
+<%end%>
+
+<div class="conversations">
+
+  <!-- Filter conversions for non existing users -->
+  <% @conversations = @conversations.reject { |conversation| conversation.originator.nil? } %>
+
+  <% if @box=="sentbox" %>
+    <!-- Filter conversations -->
+    <% @conversations = @conversations.select { |conversation| conversation.originator == current_subject.actor } %>
+  <% end %>
+
+  <%= render @conversations %>
+
+  <%= render partial: 'layouts/more',
+             locals: {
+               path: conversations_path,
+               per_page: 9,
+               total: @conversations.length
+            } %>
+</div>

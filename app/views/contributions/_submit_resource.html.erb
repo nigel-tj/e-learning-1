@@ -1,0 +1,20 @@
+<%
+  if !wa_assignment.nil?
+    contribution_parent_key = "wa_assignment_id"
+    contribution_parent_value = wa_assignment.id.to_s
+  else
+    contribution_parent_key = "parent_id"
+    contribution_parent_value = parent.id.to_s
+  end
+%>
+
+<div class="new_contribution_form_wrapper">
+  <div id="<%=form_id%>" class="modal fade new_contribution_resource" contribution-parent-key="<%=contribution_parent_key%>" contribution-parent-value="<%=contribution_parent_value%>">
+    <div class="modal-dialog">
+      <div class="modal-content" >
+        <!-- This body is replaced with views/contributions/new.partial.erb every time the modal is called -->
+      </div>
+    </div>
+  </div>
+  <button class="btn btn-primary btn_show_upload" data-toggle="modal" data-target="#<%=form_id%>" data-remote="<%="/contributions/new.partial?formid=" + form_id%>"><%= t('workshop.activities.assignment.available_contributions.resource') %></button>
+</div>

@@ -1,0 +1,299 @@
+<% isNewInstance = resource.new_record? %>
+
+<article id="new_file">
+  <div class="layoutform <%=isNewInstance ? 'layoutform_newInstance' : 'layoutform_editInstance'%>">
+
+    <%= form_for(resource) do |f| %>
+      <%= f.hidden_field :owner_id %>
+
+      <div class="error">
+        <ul>
+          <h4>
+            <% resource.errors.full_messages.each do |msg| %>
+          </h4>
+          <li>
+            <h5>
+              <%= msg %>
+            </h5>
+          </li>
+          <% end %>
+        </ul>
+      </div>
+
+      <% if resource.document? %>
+        <%=render :partial => "common_documents/common_edit", :locals => {:f => f, :isNewInstance => isNewInstance}%>
+      <% end %>
+
+      <% editPartial = lookup_context.template_exists?("common_edit", resource.class.to_s.underscore.pluralize, true) %>
+      <% if editPartial %>
+        <%= render partial: "#{ resource.class.to_s.tableize }/common_edit", locals: { :f => f, :isNewInstance => isNewInstance, resource.class.to_s.underscore.to_sym => resource } %>
+      <% end %>
+
+      <section class="title">
+        <%= f.label :title, t('document.info.title') %>
+        <%= f.text_field :title, :class => "form-control" %>
+      </section>
+
+      <section class="description">
+        <%= f.label :description, t('document.info.description') %>
+        <%= f.text_area :description, :rows => "6", :class => "form-control" %>
+      </section>
+
+      <%if resource.class.name=="Course" %>
+        <%= render partial: "courses/new_extra_fields", locals: { :f => f} %>
+      <%end%>
+
+      <section class="tags">
+        <%= f.label :tag_list, t('document.info.tags') %>
+        <%= f.hidden_field :tag_list, :multiple => true %>
+        <div class="tagBoxDocument">
+           <ul class="resourceTagList"></ul>
+        </div>
+      </section>
+
+      <%
+        initialTags = resource.tag_list || []
+        tags = (ActivityObject.tag_counts.all.map{|e| e.name} + initialTags + Vish::Application.config.catalogue["keywords"]).uniq!
+        if tags.nil?
+          tags = []
+        end
+      %>
+
+      <!-- Tags -->
+      <script>
+        var tagsSource = [
+              <% tags.each do |tag|%>
+                "<%=tag%>",
+              <%end%>
+              ];
+      </script>
+
+      <%content_for :javascript do%>
+
+        $("#new_file ul.resourceTagList").tagit({
+          maxLength: '<%=Vish::Application.config.tagsSettings["maxLength"]%>',
+          maxTags: '<%=Vish::Application.config.tagsSettings["maxTags"]%>',
+          triggerKeys: <%=raw(Vish::Application.config.tagsSettings["triggerKeys"].to_json)%>,
+          watermarkAllowMessage: '<%=t('document.tags.addMessage')%>',
+          watermarkDenyMessage: '<%=t('document.tags.limitMessage')%>',
+          tagSource: tagsSource
+        });
+
+        <% initialTags.each do |cnt| %>
+          $("#new_file ul.resourceTagList").tagit("add", "<%= cnt %>");
+        <%end%>
+      <%end%>
+
+      <%unless resource.class.name=="Picture" %>
+        <section class="avatar">
+          <%= f.label :avatar, t('document.leyend.avatar') %>
+          <%= f.file_field :avatar %>
+        </section>
+      <%end%>
+
+      <%if resource.class.name=="Workshop" %>
+        <section class="banner">
+          <%= f.label :banner, t('workshop.actions.add_banner') %>(<%=t('workshop.actions.add_banner_help') %>)
+          <%= f.file_field :banner %>
+        </section>
+      <%end%>
+
+      <section class="language">
+        <%= f.label :language, t('document.leyend.language') %>
+        <%= f.select(:language, resource_language_options_for_select(resource.language)) %>
+      </section>
+
+      <section class="target_age">
+        <%= f.hidden_field :age_min %>
+        <%= f.hidden_field :age_max %>
+        <!--AGE SLIDER-->
+        <label><%= t('document.leyend.recommended_age')%></label>
+        <div class="limits">
+          <div class="limit1">0</div>
+          <div class="limit2">0</div>
+        </div>
+        <%
+          if resource.age_range.nil?
+            sliderAgeMax = 1
+          else
+            sliderAgeMax = resource.age_max
+          end
+        %>
+        <input type="text" class="age-slider" value="" data-slider-min="0" data-slider-max="30" data-slider-step="1" data-slider-value="[<%=resource.age_min%>,<%=sliderAgeMax%>]" data-slider-orientation="horizontal" data-slider-tooltip="hide"/>
+      </section>
+
+      <%if resource.class.name=="Link" %>
+        <section class="is_embed">
+          <%= f.check_box 'is_embed' %>
+          <%= f.label :is_embed, t('link.is_embed'), :class=>"label_embedable" %>
+        </section>
+      <%end%>
+
+      <% if !isNewInstance and !resource.respond_to? "draft" %>
+        <section class="scope">
+          <%= f.label :scope, t('document.leyend.scope') %>
+          <%= f.select(:scope, options_for_select([[t('scope.public'), 0], [t('scope.private'), 1]],resource.scope)) %>
+        </section>
+      <% end%>
+
+      <% if resource.should_have_license? %>
+        <section class="license">
+          <%= f.label :license_id, t('document.info.license') %>
+          <% if resource.license.nil? or resource.license.private? or isNewInstance %>
+            <%= f.select(:license_id, resource_license_options_for_select(resource.license_id, resource.document?), {}, {:class => "resource_license"}) %>
+          <% else %>
+            <span><%= resource.license_name %></span>
+          <% end %>
+          <% if isNewInstance %>
+              <% showLicenseCustom = (!resource.license.nil? and resource.license.custom?) %>
+              <div class="license_custom_wrapper" <%='style=display:none' unless showLicenseCustom %> >
+                <%= f.label :license_custom, t("document.info.license_custom_form") %>
+                <%= f.text_field :license_custom, :class => "form-control" %>
+              </div>
+          <% end %>
+        </section>
+      <% end %>
+
+      <% if resource.should_have_authorship? %>
+        <section class="authorship">
+          <% unless isNewInstance or resource.author.nil? %>
+            <label><%=t("document.info.author")%>:</label>
+            <span><%= resource.original_author_name %></span>
+            <%unless resource.license_attribution.blank? or resource.license.nil? or !resource.license.requires_attribution? %>
+              <br/>
+              <label><%=t("document.info.license_attribution")%>:</label>
+              <span><%= resource.license_attribution %></span>
+            <% end %>
+          <% else %>
+            <br/>
+            <% currentUserIsOwner = (resource.original_author.nil? or (!current_subject.nil? and resource.original_author==current_subject.name)) %>
+            <input type="checkbox" <%='checked="checked"' if currentUserIsOwner %> class="authorship_checkbox"></input>
+            <label class="resource_authorship_label"><%=t("document.leyend.authorship_recognition")%></label>
+            <br/>
+            <%= f.label :original_author, t("document.info.author"), :class => "authorship_author_label" %>
+            <%= f.text_field :original_author, :class => "form-control authorship_author", :disabled => currentUserIsOwner, :defaultvalue => current_subject.name, :value => (resource.original_author or current_subject.name) %>
+            <%= f.label :license_attribution, t("document.info.license_attribution"), :class => "authorship_attribution_label" %>
+            <%= f.text_field :license_attribution, :class => "form-control authorship_attribution", :disabled => currentUserIsOwner, :defaultvalue => current_subject.default_license_attribution, :value => (resource.license_attribution or current_subject.default_license_attribution) %>
+          <% end %>
+        </section>
+      <% end %>
+
+      <div class="footer-form clearfix">
+        <%= f.submit :class => "btn btn-primary form-sender", "data-loading-text" => t('button.sending') %>
+        <% if resource.class.name=="Workshop" && !isNewInstance %>
+          <button class="btn btn-default" href="<%=edit_workshop_path(@workshop)%>"><%=t('workshop.actions.cancel_&_go')%></button>
+        <%end%>
+      </div>
+    <% end %>
+
+    <%content_for :javascript do%>
+      $("#new_file input[type='submit']").click(function(event){
+        //AGE
+        var resource_type = "<%=resource.class.name.downcase%>";
+        var value1 = $('#new_file .age-slider').data('slider').getValue()[0];
+        var value2 = $('#new_file .age-slider').data('slider').getValue()[1];
+        $('#new_file input[name="'+resource_type+'[age_min]"]').val(value1);
+        $('#new_file input[name="'+resource_type+'[age_max]"]').val(value2);
+
+        <% beforeSubmitPartial = lookup_context.template_exists?("common_edit_before_submit", resource.class.to_s.underscore.pluralize, true) %>
+        <% if beforeSubmitPartial %>
+          <%= render partial: "#{ resource.class.to_s.tableize }/common_edit_before_submit", locals: { resource.class.to_s.underscore.to_sym => resource, :resourceType => resource.class.name.downcase } %>
+        <%end%>
+
+        $(this).button('loading');
+      });
+
+      //SLIDER
+      var min = 0;
+      var max = 30;
+      var step = 1;
+      var diff = max - min;
+
+      var newFilePositionLimits = function(){
+        var value1 = $('#new_file .age-slider').data('slider').getValue()[0];
+        var value2 = $('#new_file .age-slider').data('slider').getValue()[1];
+        $('#new_file .limit1').text(value1);
+        $('#new_file .limit2').text(value2);
+
+        var percentage =[
+          (value1-min)*100/diff,
+          (value2-min)*100/diff,
+          step*100/diff
+        ];
+
+        $("#new_file .limit1").css("left", function(ev) {
+          return $('#new_file .slider').width() * percentage[0]/100 - $("#new_file .limit1").width()/2 + 'px';
+        });
+        $("#new_file .limit2").css("left", function(ev) {
+          return $('#new_file .slider').width() * percentage[1]/100 - $("#new_file .limit2").width()/2 + 'px';
+        });
+      };
+
+      $("#new_file .age-slider").slider().on('slide', function(ev){
+        newFilePositionLimits();
+      });
+
+      $("#new_file .age-slider").before($("#new_file .limits"));
+
+      $('a[href="#document-edit"]').on('shown.bs.tab', function(e){
+        newFilePositionLimits();
+      });
+
+      document.addEventListener("DOMContentLoaded", function(){
+        SocialStream.Document.edit();
+        newFilePositionLimits();
+      });
+
+      $("#new_file .form-sender").click(function(){
+        var resourceTagList=[];
+        $("#new_file ul.resourceTagList .tagit-choice").each(function(index,elem){
+          resourceTagList.push($(elem).text());
+        });
+        $("#new_file .tags input").hide();
+        $("#new_file .tags input").val(resourceTagList);
+      });
+
+      // onDocumentReady
+      // document.addEventListener("DOMContentLoaded", function(){});
+      SocialStream.Document.edit();
+      <% if resource.age_range.nil? %>
+        $('#new_file .age-slider').data('slider').setValue([0,0]);
+      <% end %>
+      newFilePositionLimits();
+
+      //Authorship
+      $("#new_file section.authorship input[type='checkbox']").change(function(){
+        var checked = $(this).prop('checked');
+        var authorDOM = $(this).parent().find("input.authorship_author");
+        var attributionDOM = $(this).parent().find("input.authorship_attribution");
+
+        if(checked){
+          $(authorDOM).attr("disabled","disabled");
+          $(authorDOM).val($(authorDOM).attr("defaultvalue"));
+          $(attributionDOM).attr("disabled","disabled");
+          $(attributionDOM).val($(attributionDOM).attr("defaultvalue"));
+        } else {
+          $(authorDOM).removeAttr("disabled");
+          $(authorDOM).val("");
+          $(attributionDOM).removeAttr("disabled");
+          $(attributionDOM).val("");
+        }
+      });
+
+      //Custom license listener
+      $("#new_file section.license select.resource_license").change(function(event){
+        if($(this).find(":selected").text()==="<%=t("licenses.other")%>"){
+          if(!$("#new_file section.license div.license_custom_wrapper").is(":visible")){
+            $("#new_file section.license div.license_custom_wrapper").show();
+          }
+        } else {
+          if($("#new_file section.license div.license_custom_wrapper").is(":visible")){
+            $("#new_file section.license div.license_custom_wrapper").hide();
+          }
+        }
+      });
+
+    <% end %>
+
+  </div>
+</article>

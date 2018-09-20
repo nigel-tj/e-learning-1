@@ -1,0 +1,163 @@
+<section id="quiz">
+  
+  <div class="icontitle">
+    <i class="fa fa-check-square-o"></i>
+    <%=t('quiz.live')%>
+  </div>
+
+  <div class="whiteframe">
+    <div class="textrow">
+      <h4><%=t('quiz.openedL')%></h4>
+      <% if @quiz_active_sessions.length > 0 %>
+        <ul id="sortable1" class="connectedSortable">
+          <% @quiz_active_sessions.each do |q| %>
+            <li class="ui-state-default" data-target="#QuizAnalitycs" data-toggle="modal" data-remote="<%="/quiz_sessions/#{q.id}/results.partial"%>">
+              <p class="qs_name">
+                <% if q.name && !q.name.empty? %>
+                  <%= q.name %>
+                <% else %>
+                  <%=t('quiz.untitled')%>
+                <% end %>
+              </p>
+              <button type="button" class="delete btn btn-default" urlToRemoveQuiz="<%="#{q.delete_url}"%>" data-toggle="popover" title="<%=t('quiz.actions.delete')%>">
+                <i class="fa fa-trash-o"></i>
+              </button>
+              <button class="btn btn-default" data-target="#QuizEdit" data-toggle="modal" data-remote="<%="/quiz_sessions/#{q.id}/edit.partial"%>" title="<%=t('quiz.actions.edit')%>">
+                <i class="fa fa-edit"></i>
+              </button>
+              <button class="closeqb btn btn-default" urlToCloseQuiz=<%="#{q.close_url}"%> data-toggle="popover" title="<%=t('quiz.actions.close')%>">
+                <i class="fa fa-power-off"></i>
+              </button>
+              <p class="creation_date">
+                <%=t('quiz.createdAt')%> <%= q.created_at.strftime("%d-%m-%Y %H:%M") %>
+              </p>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <p><i class="fa fa-hand-o-up"></i> <%=t('quiz.noOpenQuizzes')%></p>
+      <% end %>
+    </div>
+
+    <div class="textrow">
+      <h4><%=t('quiz.closedL')%></h4>
+      <% if @quiz_inactive_sessions.length > 0 %>
+        <ul id="sortable2" class="connectedSortable">
+          <% @quiz_inactive_sessions.each do |q| %>
+            <li class="ui-state-default" data-target="#QuizAnalitycs" data-toggle="modal" data-remote=<%="/quiz_sessions/#{q.id}/results.partial"%>>
+              <p class="qs_name">
+                <% if q.name && !q.name.empty? %>
+                  <%= q.name %>
+                <% else %>
+                  <%=t('quiz.untitled')%>
+                <% end %>
+              </p>
+              <button class="delete btn btn-default" urlToRemoveQuiz=<%="#{q.delete_url}"%> data-toggle="popover" title="<%=t('quiz.actions.delete')%>" aria-hidden="true">
+                <i class="fa fa-trash-o"></i>
+              </button>
+              <button class="btn btn-default" title="<%=t('quiz.actions.edit')%>" data-target="#QuizEdit" data-toggle="modal" data-remote=<%="/quiz_sessions/#{q.id}/edit.partial"%>>
+                <i class="fa fa-edit"></i>
+              </button>
+              <p class="creation_date">
+                <%=t('quiz.openPeriod')%> <%= q.created_at.strftime("%d-%m-%Y %H:%M") %>
+                <%if q.closed_at%>
+                 - <%= q.closed_at.strftime("%d-%m-%Y %H:%M") %>
+                <% end %>
+              </p>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <p><i class="fa fa-hand-o-left"></i> <%=t('quiz.noClosedQuizzes')%></p>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Quiz session close confirmation-->
+  <div class="contentclose" style="display: none">
+    <p class="delete_p"><%=t('quiz.confirm_close')%></p>
+    <div class="actions">
+      <a class="btn btn_cancel"><%=t('cancel')%></a>
+      <a class="btn btn-primary quiz_actions_close"><%=t('quiz.actions.close')%></a>
+    </div>
+  </div>
+
+  <!-- Quiz session delete confirmation-->
+  <div class="contentdelete" style="display: none">
+    <p class="delete_p"><i class="fa fa-trash-o"></i>  <%=t('quiz.confirm_delete')%></p>
+    <div class="actions">
+      <a class="btn btn_cancel"><%=t('cancel')%></a>
+      <a class="btn btn-primary quiz_actions_delete"><%=t('quiz.actions.delete')%></a>
+    </div>
+  </div>
+
+</section>
+
+<div id="QuizAnalitycs" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="QuizLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <!-- This body is replaced with show_results.html.erb every time the modal is called -->
+    </div>
+  </div>
+</div>
+
+<div id="QuizEdit" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="QuizLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <!-- This body is replaced with edit.html.erb every time the modal is called -->
+    </div>
+  </div>
+</div>
+
+
+<%= content_for :javascript do %>
+
+  $('#QuizAnalitycs').on('hidden.bs.modal', function(){
+    $(this).removeData('bs.modal');
+  });
+
+  $('#QuizEdit').on('hidden.bs.modal', function(){
+    $(this).removeData('bs.modal');
+  });
+
+  $(".ui-state-default").click(function(event){
+    //Prevent new quiz window to appear when a button is clicked
+    if(($(event.target).attr("data-toggle")=="popover")||($($(event.target).parent()).attr("data-toggle")=="popover")||($(event.target).parents(".popover").length > 0)){
+      $('[data-toggle="popover"]').not(event.target).not($(event.target).parent()).popover('hide');
+      event.stopPropagation();
+    }
+  });
+
+  $('.closeqb').popover({
+    html : true,
+    content: function() {
+      return $('.contentclose').html();
+    },
+    placement : 'top'
+  });
+
+  $('.closeqb').on('shown.bs.popover', function(){
+    $('.btn_cancel').on("click",function(event){
+      $('.closeqb').popover('hide');
+      event.stopPropagation();
+    });
+    $("a.quiz_actions_close").attr("href",$(this).attr("urlToCloseQuiz"));
+  });
+
+  $('.delete').popover({
+    html : true,
+    content: function() {
+      return $('.contentdelete').html();
+    },
+    placement : 'top'
+  });
+
+  $('.delete').on('shown.bs.popover', function(){
+    $('.btn_cancel').on("click",function(event){
+      $('.delete').popover('hide');
+      event.stopPropagation();
+    });
+    $("a.quiz_actions_delete").attr("href",$(this).attr("urlToRemoveQuiz"));
+  });
+
+<% end %>

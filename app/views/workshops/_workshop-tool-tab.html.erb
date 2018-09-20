@@ -1,0 +1,148 @@
+<%content_for :javascript do%>
+
+    var shareEvents = false;
+
+    $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+      // e.target // activated tab
+      // e.relatedTarget // previous tab
+      var loadedTab = $(e.target).attr("tabTitle");
+      switch (loadedTab){
+        case "share":
+          if(!shareEvents){
+            shareEvents = true;
+            $('button#btn_copy_share').zclip({
+              path:'/assets/ZeroClipboard.swf',
+              copy:function(){
+                return $('#input_with_shorturl').val();
+              },
+              afterCopy: function(){}
+            });
+            $("#input_with_shorturl").mouseup(function(e){
+              // fixes safari/chrome problem
+              e.preventDefault();
+            }).focus(function(e){
+              mytxt = $(this).text();
+              $(this).select();
+            }).click(function(e){
+              mytxt = $(this).text();
+              $(this).select();
+            });
+          }
+          break;
+        default:
+          break;
+      }
+    });
+
+    $('.delete').popover({
+      html : true,
+      content: function() {
+        return $('.contentdelete').html();
+      },
+      container: "body"
+    });
+
+    $(".with_tooltip").tooltip({ placement: 'bottom'});
+    $('[data-toggle="tooltip"], .with_tooltip').tooltip({ placement: 'bottom'});
+<%end%>
+
+
+<!--BTN ACTIONS-->
+<div class="btn-group">
+
+  <div class="contentdelete" style="display: none">
+    <p class="delete_p"><i class="fa fa-trash-o"></i>  <%=t('excursion.confirm_delete')%></p>
+    <div class="actions">
+      <a class="btn btn_cancel"><%=t('cancel')%></a>
+      <%= link_to t('excursion.actions.delete'),  @workshop, :method => :delete, :class => 'btn btn-primary' %>
+    </div>
+  </div>
+
+  <!--Favorite-->
+  <% unless @workshop.post_activity.nil? %>
+    <%= link_like(@workshop.post_activity, {:size => :big, :class=>'btn', :title =>t('excursion.actions.favorite')})%>
+  <%end%>
+
+  <!--Evaluate-->
+  <%if showEvaluation%>
+    <button onclick="triggerEvaluation()" class="btn" data-toggle="tooltip" title="<%=t('evaluation.verb')%>">
+      <i class="fa fa-check-square"></i>
+    </button>
+  <%end%>
+
+  <!--Categorize-->
+  <%if user_signed_in? %>
+    <%= render partial: 'categories/category_modal_viewer', :locals => {:remote=> true, :item => @workshop} %>
+    <button id="AddCategory" role="button" class="categorize_select btn with_tooltip" data-toggle="modal" data-target="#categories_viewer_modal" title="<%=t('category.modalLabel')%>" aria-hidden="true" >
+      <i class="fa fa-th-large"></i>
+    </button>
+  <%end%>
+
+</div>
+
+
+<!--TABS-->
+  <ul class="nav nav-tabs">
+    <li class="active">
+      <a href="#tab1" tabTitle='details' data-toggle="tab">
+        <i class="fa fa-align-left"></i>
+        <span class="hidden-xs">
+          <%=t('excursion.detail')%>
+        </span>
+      </a>
+    </li>
+    <li>
+      <a href="#tab3" tabTitle='share' data-toggle="tab">
+        <i class="fa fa-share"></i>
+        <span class="hidden-xs">
+          <%=t('excursion.actions.share')%>
+        </span>
+      </a>
+    </li>
+    <li>
+      <a href="#tab5" tabTitle='flag' data-toggle="tab">
+        <i class="fa fa-flag"></i>
+        <span class=" hidden-xs">
+        <%=t('excursion.actions.spam')%>
+        </span>
+      </a>
+    </li>
+  </ul>
+
+
+<div class="tab-content excursion-social">
+
+  <!-- tab1 / details -->
+  <div class="tab-pane active" id="tab1">
+    <div class="toggler">
+      <!--description-->
+      <%= render :partial => 'workshops/workshop-info' %>
+    </div>
+  </div>
+
+  <!-- tab3 / share -->
+  <div class="tab-pane contentShare" id="tab3">
+    <div class="form-group">
+      <div class="input-group">
+        <input class="shortUrl form-control" readonly="true" id="input_with_shorturl" type="text" value="<%=shortURL%>"/>
+        <div class="input-group-addon">
+          <div data-toggle="tooltip" data-placement="right" title="<%=t('copy_to_clip')%>">
+          <button class="btn copy_btn" id="btn_copy_share" href="#" >
+              <i class="fa fa-copy "></i>
+          </button>
+        </div>
+        </div>
+      </div>
+    </div>
+    <%= render :partial=>'shareon/share', :locals=>{:url=>shortURL, :title => @workshop.title, :name => (user_signed_in? ? current_subject.name : '')} %>
+  </div>
+
+  <!-- tab5 / spam -->
+  <div class="tab-pane" id="tab5">
+    <div>
+      <%@activity_object = @workshop.activity_object%>
+      <%= render '/spam_report/form' %>
+    </div>
+  </div>
+
+</div>

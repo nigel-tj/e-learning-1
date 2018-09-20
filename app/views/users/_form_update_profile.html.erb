@@ -1,0 +1,123 @@
+<div class="update">
+  <% if can?(:update, @profile) %>
+    <label><%=  t('avatar.profile_change') %></label>
+    <%= render partial: 'profiles/avatar_edit' %>
+
+    <%= form_for(profile_subject, :url => [profile_subject]) do |f| %>
+
+      <%= f.label t('actor.name'), :class => "name-required" %>
+      <%= f.text_field :name, :class => "form-control required", :maxlength => 50 %>
+
+      <%= f.label t('profile.occupation.label'), :class => "text" %>
+      <%= f.select(:occupation, options_for_select([[t('profile.occupation.options.select'), 0], [t('profile.occupation.options.teacher'), 1],[t('profile.occupation.options.scientist'),2], [t('profile.occupation.options.other'),3]], profile_subject.occupation)) %>
+
+      <%= f.label t('profile.organization'), :class => "text" %>
+      <%= f.text_field :organization, :class => "form-control input_settings" %>
+
+      <%= f.label t('profile.website'), :class => "text" %>
+      <%= f.url_field :website, :class => "form-control input_settings" %>
+
+      <div class="birthday">
+        <%= f.label t('profile.' + profile_subject.class.to_s.downcase + '.birthday'), :class => "text" %>
+        <%= date_select "user", "birthday", :order => [:day, :month, :year], :end_year => Date.today.year, :start_year => (Date.today.year - 100), :prompt => {:day => 'Day', :month => 'Month', :year => 'Year'} %>
+      </div>
+
+      <%= f.label t('profile.city'), :class => "text" %>
+      <%= f.text_field :city, :class => "input_settings form-control" %>
+
+      <%= f.label t('profile.country'), :class => "text" %>
+      <%= f.text_field :country, :class => "input_settings form-control" %>
+
+      <%= f.label :description, t("profile.#{ profile_subject.class.to_s.downcase }.about") %>
+      <%= f.text_area :description, :maxlength => 500, :rows => 2, :value => profile_subject.description, :class => "form-control" %>
+
+      <!-- Tags preloaded -->
+      <% @tags = ActivityObject.tag_counts(:limit => 100, :order => "count desc")%>
+      <ul id="userPreloadTagList" style="display:none">
+        <%@tags.each do |tag| %>
+          <li><%=tag.name%></li>
+        <%end%>
+      </ul>
+
+      <!-- User tags -->
+      <% @user_tags = profile_subject.tags %>
+      <ul id="preloadUserTagList" style="display:none">
+        <%@user_tags.each do |tag| %>
+          <li><%=tag.name%></li>
+        <%end%>
+      </ul>
+
+      <%= f.label t('activerecord.attributes.user.tag') %>
+      <div class="tagBoxNew">
+        <ul class="userTagList"></ul>
+      </div>
+      <%= f.hidden_field :tag_list, :class => "form_tag", :id => "input_user_tag_list", :placeholder => t('devise.tags') %>
+
+      <div class="actions">
+        <%= f.submit t('button.update'), :class=>"btn btn-primary", "data-loading-text" => t('button.sending') %>
+        <%=link_to t('hide'), "#", :id=>"hide_profile_form", :class=>"btn btn-default"%>
+      </div>
+    <% end %>
+   
+    <%= content_for :javascript do %>
+        var userTagList = $(".userTagList");
+        var userTagsSource = [];
+
+        //Load tags
+        $.each($("#userPreloadTagList li"), function(index, element) {
+           userTagsSource.push($(element).html());
+        });
+
+        if ($(userTagList).children().length == 0){
+          $.each($("#preloadUserTagList li"), function(index, element) {
+            $(userTagList).append("<li>" + $(element).html() + "</li>");
+          });
+        }
+
+        $(userTagList).tagit({
+          tagSource: userTagsSource,
+          sortable: true,
+          maxLength: '<%=Vish::Application.config.tagsSettings["maxLength"]%>',
+          maxTags: '<%=Vish::Application.config.tagsSettings["maxTags"]%>',
+          triggerKeys: <%=raw(Vish::Application.config.tagsSettings["triggerKeys"].to_json)%>,
+          watermarkAllowMessage: '<%=t('document.tags.areasOfInterestMessage')%>', 
+          watermarkDenyMessage: '<%=t('document.tags.limitMessage')%>',
+          tagsChanged:function (tag, action) {
+            //Check if the element popped is a suggestion
+            if(action=="popped"){
+              $.each($(".tagit-suggestions li"), function(index, element) {
+                if($(element).html()==tag){
+                  $(element).show();
+                }
+              });
+            }
+          }
+        });
+
+        //Allow suggestions
+        $(".tagit-suggestions li").on("click", function(){
+          var result = $(".tagit").tagit('add', $(this).html() );
+          if(result==true){
+            $(this).hide();
+          }
+        });
+
+        //Fill tag_list hidden input before send
+        var userUpdateProfileButton = $("input[type='submit'][name='commit']");
+        $(userUpdateProfileButton).click(function(event) {
+           $(this).button('loading');
+           $("#hide_profile_form").hide();
+
+           var userTagList = $(".userTagList");
+           $("#input_user_tag_list").val(Vish.Utils.convertToTagsArray($(userTagList).tagit("tags")));
+           return true;
+        });
+
+        $("#hide_profile_form").click(function(){
+          $(".update").hide("slow");
+          $(".briefing").show("slow");
+        });
+
+    <% end %>
+  <% end %>
+</div>

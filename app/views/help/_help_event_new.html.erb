@@ -1,0 +1,21 @@
+<span class="helpheader">   
+  <i class="fa fa-question-circle" id="helpeventid" data-toggle="popover" data-placement='left' aria-hidden="true" data-original-title="<%= t('document.help.event_html')%>" href='#' value="" ></i>
+  <div id="contenthelpeventid" style="display: none">
+    <div class="popover-body">
+      <p><%= t('document.help.event1_html')%></p>
+      <p><%= t('document.help.event2_html')%></p>
+      <p><%= t('document.help.event3_html')%></p>
+      <p><%= t('document.help.event4_html')%></p>
+      <p><%= t('document.help.event5_html')%></p>
+    </div>
+    <div class="popover-footer popoverfix"><%= t('document.help.overview_html')%></div>
+  </div>
+</span>
+<%content_for :javascript do%>
+  $('#helpeventid').popover({ 
+    html : true,
+    content: function() {
+      return $('#contenthelpeventid').html();
+    }
+  });
+<%end%>

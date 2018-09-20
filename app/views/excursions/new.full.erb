@@ -1,0 +1,110 @@
+<%= render :partial => 'vish_editor' %>
+
+<script>	
+	options = {};
+	var configuration = {};
+
+	configuration["ImagesPath"] = "/assets/";
+	configuration["StylesheetsPath"] = "/assets/";
+
+	configuration["uploadPresentationPath"] = "<%= excursions_path :format=> "json"%>";
+	configuration["previewPresentationPath"] = "/excursions/preview";
+
+	configuration["uploadImagePath"] = "<%= documents_path :format=> "json"%>";
+	configuration["uploadObjectPath"] = "<%= documents_path :format=> "json"%>";
+	configuration["uploadPDF2PPath"] = "<%= pdfexes_path :format=> "json"%>";
+	configuration["uploadEPackagesPath"] = "<%= documents_path :format=> "json"%>";
+	configuration["enableFileImportation"] = true;
+
+	// Sources enabled
+	configuration["ViSH"] = true;
+	configuration["ViSH_instances"] = ["<%= Vish::Application.config.full_domain %>"];
+
+	<% unless Vish::Application.config.APP_CONFIG['Flickr'].nil? %>
+		configuration["Flickr"] = true;
+	<% end %>
+	<% unless Vish::Application.config.APP_CONFIG['EuropeanaAPIKEY'].nil? %>
+		configuration["Europeana"] = true;
+		configuration["EuropeanaAPIKEY"] =  "<%= Vish::Application.config.APP_CONFIG['EuropeanaAPIKEY'] %>";
+	<% end %>
+	<% unless Vish::Application.config.APP_CONFIG['YouTubeAPIKEY'].nil? %>
+		configuration["Youtube"] = true;
+		configuration["YoutubeAPIKEY"] =  "<%= Vish::Application.config.APP_CONFIG['YouTubeAPIKEY'] %>";
+	<% end %>
+	<% unless Vish::Application.config.APP_CONFIG['LRE'].nil? %>
+		configuration["LRE"] = true;
+		configuration["LRE_path"] = "/lre/search";
+	<% end %>
+	<% unless Vish::Application.config.APP_CONFIG['soundCloudAPIKEY'].nil? %>
+		configuration["SoundCloud"] = true;
+		configuration["SoundCloudAPIKEY"] =  "<%= Vish::Application.config.APP_CONFIG['soundCloudAPIKEY'] %>";
+	<% end %>
+	<% unless Vish::Application.config.APP_CONFIG['xwiki_url'].nil? %>
+		configuration["XWiki"] = true;
+		configuration["XWiki_url"] =  "<%= Vish::Application.config.APP_CONFIG['xwiki_url'] %>";
+	<% end %>
+
+	//Thumbnails
+	configuration["thumbnailsPath"] = '/thumbnails.json';
+	
+	//Tags
+	configuration["tagsPath"] = "/tags.json?mode=popular&limit=100";
+	
+	//TmpJSON
+	configuration["uploadJSONPath"] = "/excursions/tmpJson.json";
+
+	//Attachment
+	configuration["uploadAttachmentPath"] = "/excursions/attachments.json";
+	
+
+	configuration["presentationSettings"] = true;
+
+	var tagsSettings = new Object();
+	tagsSettings.maxLength = '<%=Vish::Application.config.tagsSettings["maxLength"]%>';
+	tagsSettings.maxTags = '<%=Vish::Application.config.tagsSettings["maxTags"]%>';
+	tagsSettings.triggerKeys = <%=raw(Vish::Application.config.tagsSettings["triggerKeys"].to_json)%>;     	
+	configuration["tagsSettings"] = tagsSettings;
+	
+	<% if available_services.include? "Catalogue" %>
+		configuration["catalog"] = <%= raw Vish::Application.config.catalogue["categories"].map{|c| c.capitalize}.to_json %>;
+	<% end %>
+
+	configuration["publishPermissions"] = ["Comment","Download","Clone"]
+
+	options["configuration"] = configuration;
+	options["developping"] = false;
+
+	options["environment"] = {
+		name: "<%= Vish::Application.config.name %>"
+	}
+
+	options["user"] = {
+		name: "<%= current_subject.name %>",
+		id: "<%= Actor.normalize_id(current_subject) %>",
+		token: "<%= form_authenticity_token %>"
+	};
+
+	<% unless current_subject.private_student_group_id == nil %>
+		configuration["notifyTeacherPath"] = '/private_student_groups/notify_teacher';
+		configuration["userMode"] = "student";
+	<% end %>
+
+	options["draft"] = true;
+
+	options["lang"] = "<%= I18n.locale.to_s%>";
+
+	<% if current_subject %>
+		options["exitURL"]  = "<%= url_for(current_subject) %>";
+	<% end %>
+
+	options.addons = [];
+	var addon = new Object();
+	addon.target = "Both";
+	addon.id = "IframeMessenger";
+	addon.config = {enable: true};
+	options.addons.push(addon);
+
+	function start(){
+		VISH.Editor.init(options);
+	}
+</script>

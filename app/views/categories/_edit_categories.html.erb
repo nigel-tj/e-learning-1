@@ -1,0 +1,181 @@
+<div id="categories_edition" class="overlay container" >
+	<div class="editing_info">
+		<h3><%= t('categories.dragandrop.place') %></h3>
+		<div class="delete">
+			<i class="fa fa-trash-o"></i>
+			<p><%= t('categories.dragandrop.trash') %></p>
+		</div>
+		<ul>
+			<li>
+				<i class="fa fa-arrows"></i>
+				<h4><%= t('categories.dragandrop.dragt1') %></h4>
+				<p><%= t('categories.dragandrop.drag1') %></p>
+			</li>
+			<li>
+				<i class="fa fa-folder-open-o"></i>
+				<h4><%= t('categories.dragandrop.dragt2') %></h4>
+				<p><%= t('categories.dragandrop.drag2') %></p>
+			</li>
+			<li>
+				<i class="fa fa-archive"></i>
+				<h4><%= t('categories.dragandrop.dragt3') %></h4>
+				<p><%= t('categories.dragandrop.drag3') %></p>
+			</li>
+		</ul>
+
+		<div class="actions">
+			<button type="button" class="btn btn-for-undo " data-toggle="button">
+				<i class="fa fa-remove"></i>
+				<%= t('cancel') %>
+			</button>
+			<button type="button" class="btn btn-primary btn-for-categorize2 " data-toggle="button">
+				<i class="fa fa-check-square"></i>
+				<%= t('categories.save') %>
+			</button>
+		</div>
+	</div>
+	
+	<div class="layout_edit items">
+		<ul class="categories edit_categories"> 
+			<% @items ||= all_categories.map{|e| e.activity_object} %>
+			<%= render partial: 'categories/items', :locals => {:use_ids => true} %>
+		</ul>
+	</div>
+</div>
+
+<script>
+	//Serialize function
+	function getidArray(){
+		var s = [];
+		$(".overlay .edit_categories .box-item").each(function(key, value){
+			s.push($(value).attr("edit-id"))
+		});
+		return s;
+	};
+	
+
+	function apply_droppable_to_elem(elem){
+		elem.droppable({
+		    drop: function( event, ui ) {
+		        var dragged = ui.draggable;
+		        var dragged_id = dragged.attr("edit-id");
+				var receiver_id = $(this).attr("edit-id");				
+				if(dragged_id != receiver_id){
+					movements_array.push([dragged_id,receiver_id]);
+					dragged.fadeOut();
+					dragged.remove();
+				}
+		    },
+		    activeClass: "category_active"
+		});
+	};
+
+	function prepare_sort_category(){
+		//Array where placed all actions
+		movements_array = [];
+		<% @category ||= nil %>
+
+		//Complete button
+		$(".btn-for-categorize2").click(function(){
+			if (movements_array.length > 0 || !beginIndex.equals(getidArray())){
+				$.ajax({
+		            url: '/categories/edit_categories',
+		            type: 'POST',
+		            dataType: "json",
+		            data: { actions: JSON.stringify(movements_array), profile_or_current_subject_id: <%=profile_or_current_subject.id%>, sort_order: JSON.stringify(getidArray())<%if @category != nil%><%="," + "cat_id: " + @category.id.to_s %><%end%>},
+		              success: function(data){
+		              				updateMainView();
+		                            movements_array = [];
+		                            $("#categories_edition").fadeOut();
+		                            $('#flash').hide(); 
+		               			 	$("#flash").append('<div class="alert alert-success"><button type="button" class="close" data-dismiss="alert">×</button><%=t("category.success")%></div>')
+		                            .fadeIn()
+		                            .delay(6000)
+		                            .fadeOut(300, function(){
+		                              $('#flash').html("");
+		                            });
+		                },
+		                 error: function(){
+		                 	$("#categories_edition").fadeOut();
+							$('#flash').hide(); 
+							$("#flash").append('<div class="alert alert-success"><button type="button" class="close" data-dismiss="alert">×</button><%=t("category.error")%></div>')
+							.fadeIn()
+							.delay(6000)
+							.fadeOut(300, function(){
+								$('#flash').html("");
+							});
+	        		}
+		    	});
+			} else {
+				$("#categories_edition").fadeOut();
+			}
+		});
+
+		//Cancel button
+		$(".btn-for-undo").click(function(){
+			$("#categories_edition").fadeOut(function(){
+				movements_array = [];
+				$(".edit_categories .box-item").remove();
+				beginObjects.appendTo(".edit_categories");
+				apply_droppable_to_elem($(".edit_categories .categorie-item"));
+				//$( ".edit_categories .box-item" ).mouseup(dragAndDrop);	
+				$(".overlay .edit_categories .box-item").click(function(){return false;});
+			});
+		});
+		
+		$(".overlay .edit_categories .box-item").click(function(){
+			return false;
+		});
+
+		$(".edit_categories").sortable({
+			start:function(event,ui){
+				 //Reduces size
+
+				 if ($(ui.item).hasClass("categorie-item")){
+				 	$(".delete p").text("<%=t('categories.dragandrop.erase')%>");
+				 }
+				 else{
+				 	$(".delete p").text("<%=t('categories.dragandrop.uncategorize')%>");
+				 }
+
+				 $(ui.item).width($(ui.item).width()*0.6);
+				 $(ui.item).height($(ui.item).height()*0.6);
+				 $(ui.item).children("div").hide();
+			},
+			stop:function(event, ui){
+				$(".delete p").text("<%=t('categories.dragandrop.trash')%>");
+				$(ui.item).children("div").show();
+			},
+			refreshPositions: true,
+			tolerance: "intersect"
+		}).disableSelection();
+
+	    apply_droppable_to_elem($(".edit_categories .categorie-item"));
+		
+		$(".overlay .delete").droppable({
+		    drop: function( event, ui ) {
+		    	var conf_erased = confirm("<%=t('categories.dragandrop.confirm')%>");
+				if(conf_erased){
+					var dragged = ui.draggable;
+					var dragged_id = dragged.attr("edit-id");
+					movements_array.push([dragged_id,"-1"]);
+					dragged.fadeOut();
+					dragged.remove();
+				}//do nothing if not confirmed
+				else{}
+		    },
+		    activeClass: "delete_active"
+		});
+
+
+	};
+
+
+  <%if request.xhr?%>
+    prepare_sort_category();
+  <%else%>
+    document.addEventListener("DOMContentLoaded", function(){  
+      prepare_sort_category();
+    });
+  <%end%>
+</script>

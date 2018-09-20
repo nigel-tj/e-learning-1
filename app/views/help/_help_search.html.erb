@@ -1,0 +1,18 @@
+<span class="helpheader">   
+  <i class="fa fa-question-circle" id="helpsearchid"  data-toggle="popover" data-placement='left' aria-hidden="true" data-original-title="<%= t('document.help.exse2_html')%>" href='#' value="" ></i>
+  <div id="contenthelpsearchid" style="display: none">
+    <div class="popover-body">
+      <p> <%= t('document.help.exse_html')%> </p>
+    </div>
+    <div class="popover-footer popoverfix"><%= t('document.help.overview_html')%></div>
+  </div>
+</span>
+
+<%content_for :javascript do%>
+    $('#helpsearchid').popover({
+      html : true,
+      content: function() {
+        return $('#contenthelpsearchid').html();
+      }
+    });
+<%end%>

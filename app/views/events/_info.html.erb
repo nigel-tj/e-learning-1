@@ -1,0 +1,76 @@
+<div class="left-info">
+  <div class="author">
+    <div class="avatar">
+      <%= link_to @event.author.subject do %>
+        <%= image_tag @event.author.logo.url(:small) %>
+      <% end %>
+    </div>
+    <div class="right-name">
+      <%= link_to document.author.subject do %>
+      <p><%= truncate_name(@event.author.name, :length => 50) %></p>
+        <% end %>
+      <div class="add">
+        <% if user_signed_in?%>
+          <%= contact_button(current_subject.contact_to!(@event.author)) %>
+        <%else%>
+          <%= contact_button(@event.author) %>
+        <%end%>
+      </div>
+
+    </div>
+  </div>
+</div>
+<div class="panel-group" id="accordion">
+  <div class="panel">
+    <header>
+      <table class="table table-hover">
+        <tr>
+          <td><span>Empieza el: </span></td>
+          <td id="start"><%= @event.start_at %></td>
+        </tr>
+        <tr>
+          <td><span>Termina el: </span></td>
+          <td id="end"><%= @event.end_at %></td>
+        </tr>
+      </table>
+    </header>
+
+    <div id="collapseInfo" class="panel-collapse collapse">
+      <div class="panel-body">
+        <table class="table table-hover">
+          <tr>
+            <% unless @event.description.blank? %>
+              <td><span><%= t 'document.info.description' %></span></td>
+              <td><%= @event.description %></td>
+            <% end%>
+          </tr>
+
+        </table>
+      </div>
+    </div>
+  </div>
+  <a class="expand" data-toggle="collapse" data-parent="#accordion" href="#collapseInfo">
+    <span id="showingMore2" class="showMore accordion-toggle btn btn-default" data-toggle="collapse" data-parent="#accordion" href="#collapseOne" title='<%=t("excursion.actions.show_fewer")%>' status="expanded" >
+    <i class="fa fa-minus-square-o"></i> <%=t('excursion.actions.show_fewer')%>
+    </span>
+  </a>
+</div>
+
+<%= content_for :javascript do %>
+
+  $("#showingMore2").click(function(e){
+      if($("#showingMore2").attr("status")==="expanded"){
+        $("#showingMore2").html('<i class="fa fa-plus-square-o"></i> <%=t("excursion.actions.show_more")%>');
+        $("#showingMore2").attr("title", "<%=t('excursion.actions.show_fewer')%>");
+        $("#showingMore2").attr("status", "collapsed");
+      }
+      else{
+        $("#showingMore2").html('<i class="fa fa-minus-square-o"></i> <%=t("excursion.actions.show_fewer")%>');
+        $("#showingMore2").attr("title", "<%=t('excursion.actions.show_more')%>");
+        $("#showingMore2").attr("status", "expanded");
+      }
+    });
+
+    $("#start").text(new Date(Date.parse("<%=@event.start_at.iso8601%>")).toLocaleString());
+    $("#end").text(new Date(Date.parse("<%=@event.end_at.iso8601%>")).toLocaleString());
+<%end%>

@@ -1,0 +1,147 @@
+<%content_for :title do%><%= profile_title @user, params[:tab] %><%end%>
+<%content_for :keywords do%><%= @user.profile.subject.tag_list %><%end%>
+<%content_for :description do%><%= profile_desc @user, params[:tab] %>. <%=@user.profile.description ? @user.profile.description : ""%><%end%>
+<%content_for :alternate_urls do%><%=raw alternate_urls(polymorphic_url(profile_subject, :tab=>params[:tab]), profile_subject)%><%end%>
+<%content_for :canonical do%><%=polymorphic_url(profile_subject, :tab=>params[:tab], :locale => params[:locale])%><%end%>
+
+<%= render :partial => 'modal_message' %>
+
+<section class="user">
+  <!--box info-->
+  <div id="profile-info">
+
+    <!--avatar-->
+    <div class="avatar">
+      <%= link_to(image_tag(profile_subject.logo.url, :size => "150x150", :alt => profile_subject.name, :class => "avatar_img"), profile_subject, :class => "avatar_im") %>
+    </div>
+
+    <!--box personal info-->
+    <section class="information">
+
+      <div class="briefing">
+
+        <!-- Tags -->
+        <div class="tags-profile">
+          <ul class="tagList">
+            <%= @user.profile.subject.tag_list%>
+          </ul>
+        </div>
+
+        <!--name-->
+        <div class="name">
+          <h1><%= @user.name %></h1>
+        </div>
+
+        <!--help-->
+        <% if profile_subject_is_current? %>
+          <%= render :partial => 'help/help_profile_own' %>
+        <% else %>
+          <%= render :partial => 'help/help_profile' %>
+        <% end %>
+
+        <!--description-->
+        <div class="description">
+          <% if @user.profile.description? %>
+            <%= @user.profile.description%>
+          <% else %>
+            <%= "#{ @user.name } #{ t('profile.is_on') } #{  t('site.name') }" %>
+          <% end %>
+        </div>
+
+        <div class="panel-group" id="accordion">
+          <div class="panel">
+
+            <!--__Email (only for admins) -->
+            <% if isAdmin? %>
+              <table class="table table-striped">
+                <tbody>
+                  <tr class="mail">
+                    <td class="name-roll"><%=t('user.email').capitalize%></td>
+                    <td><%= profile_subject.email %></td>
+                  </tr>
+                  <tr class="role">
+                    <td class="name-roll"><%=t('user.role').capitalize%></td>
+                    <td><%= profile_subject.role_name %></td>
+                  </tr>
+                </tbody>
+              </table>
+            <%end%>
+
+            <!--__Occupation -->
+            <table class="table table-striped">
+              <tbody>
+                <tr class="ocupation">
+                  <% if can?(:update, @profile) && profile_subject_is_current? && profile_subject.occupation_sym == :select %>
+                    <td class="select"><%= link_to t('profile.occupation.select'), '#', :id => "select_occupation_link" %></td>
+                  <% elsif profile_subject.occupation_sym != :select %>
+                    <td class="name-roll"><%= t('profile.occupation.label')%></td>
+                    <td><%= profile_subject.occupation_t %></td>
+                  <% end %>
+                </tr>
+              </tbody>
+            </table>
+
+            <div id="collapseInfo" class="panel-collapse collapse">
+              <table class="table table-striped">
+                <tbody>
+                  <!--__Organization -->
+                  <tr class="organization">
+                    <td><%= t('profile.organization') %></td>
+                    <td><%= @user.profile.organization %></td>
+                  </tr>
+
+                  <!--__Website -->
+                  <tr class="website">
+                    <td><%= t('profile.website') %></td>
+                    <td><%= link_to @user.profile.website,  @user.profile.website, :target=>'_blank' %></td>
+                  </tr>
+
+                  <!--__birthday -->
+                  <tr class="birthday">
+                    <td><%= t('profile.' + current_subject.class.to_s.downcase + '.birthday') %></td>
+                    <td><%= @user.profile.birthday %></td>
+                  </tr>
+
+                  <!--__city -->
+                  <tr class="city">
+                  <td><%= t('profile.city') %></td>
+                  <td><%= @user.profile.city %></td>
+                  </tr>
+
+                  <!--__Country -->
+                  <tr class="county">
+                    <td><%= t('profile.country') %></td>
+                    <td><%= @user.profile.country %></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="toolbar-profile">
+          <%= render :partial => 'users/toolbar_user' %>
+        </div>
+
+      </div>
+
+      <%= render :partial => 'users/form_update_profile' %>
+
+    </section>
+  </div>
+
+  <%= render partial: 'users/profile-info' %>
+
+  <%content_for :javascript do%>
+    SocialStream.Profile.show({
+      section: "<%= params[:section ] %>"
+    });
+
+    $("#select_occupation_link").click(function(){
+      $("#edit_icon_link").click();
+    });
+
+  <% end %>
+
+</section>

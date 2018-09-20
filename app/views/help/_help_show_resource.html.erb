@@ -1,0 +1,20 @@
+<span class="helpheader">
+  <a> 
+    <i class="fa fa-question-circle" id="helpshowresourceid"  data-toggle="popover" data-placement='left' aria-hidden="true" data-original-title="<%= t('document.help.resources1_html')%>" href='#' value="" ></i>
+  </a>
+  <div id="contenthelpshowresourceid" style="display: none">
+    <div class="popover-body">
+      <p> <%= t('document.help.resources2_html')%> </p>
+    </div>
+    <div class="popover-footer popoverfix"><%= t('document.help.overview_html')%></div>
+  </div>
+</span>
+
+<%content_for :javascript do%>
+  $('#helpshowresourceid').popover({ 
+    html : true,
+    content: function() {
+      return $('#contenthelpshowresourceid').html();
+    }
+  });
+<%end%>
