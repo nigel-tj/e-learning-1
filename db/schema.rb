@@ -219,7 +219,7 @@ ActiveRecord::Schema.define(:version => 20180720111442) do
     t.integer  "actor_id"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.text     "settings",   :default => "{}"
+    t.text     "settings"
   end
 
   create_table "contest_submissions", :force => true do |t|
@@ -234,7 +234,7 @@ ActiveRecord::Schema.define(:version => 20180720111442) do
     t.string   "name"
     t.string   "template"
     t.string   "status",       :default => "open"
-    t.text     "settings",     :default => "{}"
+    t.text     "settings"
     t.boolean  "show_in_ui",   :default => false
     t.integer  "mail_list_id"
     t.datetime "created_at"
@@ -442,7 +442,7 @@ ActiveRecord::Schema.define(:version => 20180720111442) do
 
   create_table "mail_lists", :force => true do |t|
     t.string   "name"
-    t.text     "settings",   :default => "{}"
+    t.text     "settings"
     t.datetime "created_at"
     t.datetime "updated_at"
   end

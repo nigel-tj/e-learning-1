@@ -13,7 +13,7 @@ class AddContests < ActiveRecord::Migration
       t.string "name"
       t.string "template"
       t.string "status", :default => "open"
-      t.text "settings", :default => "{}"
+      t.text "settings"
       t.boolean "show_in_ui", :default => false
       t.integer  "mail_list_id"
       t.datetime "created_at"
