@@ -3,24 +3,24 @@ development:
   adapter: mysql2
   database: vish_development
   encoding: utf8
-  username: nigel-tj
-  password:
+  username: root
+  password: ubuntu10
 #  socket: /var/run/mysqld/mysqld.sock
 
 #test:
   adapter: mysql2
   database: vish_test
-  username: nigel-tj
-  password:
+  username: root
+  password: passwd
 #  socket: /var/run/mysqld/mysqld.sock
 
 
-#production:
-#  adapter: mysql2
-#  database: vish_production
-#  username: root
-#  password:
-#  socket: /var/run/mysqld/mysqld.sock
+production:
+  adapter: mysql2
+  database: vish_production
+  username: root
+  password: passwd
+  socket: /var/run/mysqld/mysqld.sock
 
 
 
