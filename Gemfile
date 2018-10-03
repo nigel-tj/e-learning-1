@@ -1,4 +1,4 @@
-#ruby '2.2.0'
+ruby '2.3.3'
 source 'http://rubygems.org'
 
 gem 'rails' #, :git => 'git://github.com/rails/rails.git', :branch => "3-2-stable"
