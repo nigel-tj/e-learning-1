@@ -30,12 +30,12 @@ development:
 
 
 production:
-  name: "ViSH"
-  domain: "vishub.org"
+  name: "NSElearning"
+  domain: "elearning.nseye.org"
   test_domain: false
-  code_domain: "vishubcode.global.dit.upm.es"
-  code_path: "/home/isabel/vish-shared/documents/code"
-  no_reply_mail: "no-reply@vishub.org"
+  code_domain: "elearning.nseye.org"
+  code_path: "/home/elearning/public_html/elearning/shared/documents/code"
+  no_reply_mail: "noreply@nseye.org"
   main_mail: "virtual.science.hub@gmail.com"
   models:
     available: ["Excursion","Resource","Category","Event","Workshop"]
@@ -46,7 +46,7 @@ production:
   languages: ["en", "es", "de", "nl", "hu", "fr"]
   register_policy: "REGISTER_ONLY"
   advanced_search:
-    instances: ["http://vishub.org"]
+    instances: ["http://elearning.nseye.org/"]
   catalogue:
     mode: "matchtag" #matchany or matchtag
     qualityThreshold: 5
