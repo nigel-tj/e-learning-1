@@ -17,10 +17,10 @@ development:
 
 production:
   adapter: mysql2
-  database: vish_production
+  database: elearning
   username: root
-  password: passwd
-  socket: /var/run/mysqld/mysqld.sock
+  password: ubuntu10
+#  socket: /var/run/mysqld/mysqld.sock
 
 
 
