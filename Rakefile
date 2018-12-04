@@ -38,4 +38,4 @@ end
 
 task :default => [ :spec, 'assets:precompile' ]
 
-Vish::Application.load_tasks
+Rails.application.load_tasks

@@ -30,7 +30,7 @@ development:
 
 
 production:
-  name: "NSElearning"
+  name: "NS Elearning"
   domain: "elearning.nseye.org"
   test_domain: false
   code_domain: "elearning.nseye.org"

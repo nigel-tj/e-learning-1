@@ -4,7 +4,7 @@ development:
   database: vish_development
   encoding: utf8
   username: root
-  password: ubuntu10
+  password: Ubuntu10_$$
 #  socket: /var/run/mysqld/mysqld.sock
 
 #test:
@@ -19,8 +19,8 @@ production:
   adapter: mysql2
   database: elearning
   username: root
-  password: ubuntu10
-#  socket: /var/run/mysqld/mysqld.sock
+  password: Ubuntu10_$$
+  socket: /var/run/mysqld/mysqld.sock
 
 
 

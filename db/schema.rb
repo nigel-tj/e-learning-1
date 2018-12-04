@@ -23,7 +23,7 @@ ActiveRecord::Schema.define(:version => 20180720111442) do
     t.integer  "owner_id"
   end
 
-  add_index "activities", ["activity_verb_id"], :name => "index_activities_on_activity_verb_id"
+  add_index "activities", ["activity_verb_id"], :name => "index_activities_on_activity_verb_id", :unique => true
 
   create_table "activity_actions", :force => true do |t|
     t.integer  "actor_id"
